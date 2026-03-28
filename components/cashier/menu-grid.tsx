@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useStore } from "@/lib/store"
-import { calculateMaxProducible, canMakeAnySetMenu } from "@/lib/api"
+import { calculateMaxProducible } from "@/lib/api"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -13,7 +13,6 @@ import { Pizza, UtensilsCrossed, IceCream, Coffee, Package } from "lucide-react"
 
 interface MenuGridProps {
   onAddToCart: (item: CartItem) => void
-  cart: CartItem[]
 }
 
 const categoryIcons = {
@@ -32,7 +31,7 @@ const categoryLabels = {
   drink: "Drinks",
 }
 
-export function MenuGrid({ onAddToCart, cart }: MenuGridProps) {
+export function MenuGrid({ onAddToCart }: MenuGridProps) {
   const { menuItems, ingredients } = useStore()
   const [selectedSize, setSelectedSize] = useState<Record<string, PizzaSize>>({})
 
@@ -56,14 +55,7 @@ export function MenuGrid({ onAddToCart, cart }: MenuGridProps) {
   }
 
   const getMaxProducible = (item: MenuItem) => {
-    if (item.category === "set") {
-      const ok = canMakeAnySetMenu(
-        item.id as "set-pizza-combo" | "set-grand-mix",
-        ingredients,
-        cart
-      )
-      return ok ? Infinity : 0
-    }
+    if (item.category === "set") return Infinity // Set menus: stock checked inside modal
     const size = item.category === "pizza" ? (selectedSize[item.id] || "M") : "M"
     return calculateMaxProducible(item.id, ingredients, size)
   }
@@ -93,9 +85,8 @@ export function MenuGrid({ onAddToCart, cart }: MenuGridProps) {
               .filter((item) => item.category === category)
               .map((item) => {
                 const maxProducible = getMaxProducible(item)
-                const isLowStock =
-                  maxProducible > 0 && maxProducible <= 5 && item.category !== "set"
-                const isOutOfStock = maxProducible === 0
+                const isLowStock = maxProducible > 0 && maxProducible <= 5
+                const isOutOfStock = maxProducible === 0 && item.category !== "set"
                 const currentSize = selectedSize[item.id] || "M"
                 const displayPrice =
                   item.category === "pizza" && currentSize === "L" && item.priceL
@@ -160,20 +151,22 @@ export function MenuGrid({ onAddToCart, cart }: MenuGridProps) {
                       )}
 
                       {/* Stock indicator */}
-                      <div className="mt-2">
-                        {isOutOfStock ? (
-                          <Badge variant="destructive" className="text-xs">
-                            Out of Stock
-                          </Badge>
-                        ) : item.category !== "set" && isLowStock ? (
-                          <Badge
-                            variant="outline"
-                            className="text-xs border-warning text-warning"
-                          >
-                            Low Stock ({maxProducible} left)
-                          </Badge>
-                        ) : null}
-                      </div>
+                      {item.category !== "set" && (
+                        <div className="mt-2">
+                          {isOutOfStock ? (
+                            <Badge variant="destructive" className="text-xs">
+                              Out of Stock
+                            </Badge>
+                          ) : isLowStock ? (
+                            <Badge
+                              variant="outline"
+                              className="text-xs border-warning text-warning"
+                            >
+                              Low Stock ({maxProducible} left)
+                            </Badge>
+                          ) : null}
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 )

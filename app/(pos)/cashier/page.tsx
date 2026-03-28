@@ -141,7 +141,7 @@ export default function CashierPage() {
           </p>
         </div>
 
-        <MenuGrid onAddToCart={handleAddToCart} cart={cart} />
+        <MenuGrid onAddToCart={handleAddToCart} />
       </div>
 
       {/* Cart Section */}
