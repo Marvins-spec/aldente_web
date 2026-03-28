@@ -1,7 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
+import { toast } from "sonner"
 import { useStore } from "@/lib/store"
+import { validateStockForItems } from "@/lib/api"
 import { getPizzas, getDesserts, getDrinks } from "@/lib/data"
 import {
   Dialog,
@@ -22,6 +24,7 @@ interface SetMenuModalProps {
   onOpenChange: (open: boolean) => void
   type: "pizza-combo" | "grand-mix-box"
   price: number
+  cart: CartItem[]
   onAddToCart: (item: CartItem) => void
 }
 
@@ -30,11 +33,40 @@ export function SetMenuModal({
   onOpenChange,
   type,
   price,
+  cart,
   onAddToCart,
 }: SetMenuModalProps) {
   const [selectedPizza, setSelectedPizza] = useState("")
   const [selectedDessert, setSelectedDessert] = useState("")
   const [selectedDrink, setSelectedDrink] = useState("")
+
+  const { ingredients } = useStore()
+
+  const pendingCartItem = useMemo((): CartItem | null => {
+    if (!selectedPizza || !selectedDessert || !selectedDrink) return null
+    const setDetails: SetMenuDetails = {
+      type,
+      pizza: selectedPizza,
+      dessert: selectedDessert,
+      drink: selectedDrink,
+    }
+    return {
+      cartId: `set-${type}-pending`,
+      id: type === "pizza-combo" ? "set-pizza-combo" : "set-grand-mix",
+      name: type === "pizza-combo" ? "Pizza Combo" : "Grand Mix Box",
+      category: "set",
+      quantity: 1,
+      price,
+      setDetails,
+    }
+  }, [selectedPizza, selectedDessert, selectedDrink, type, price])
+
+  const stockCheck = useMemo(() => {
+    if (!pendingCartItem) {
+      return { valid: true as const, missingIngredients: [] as string[] }
+    }
+    return validateStockForItems([...cart, pendingCartItem], ingredients)
+  }, [pendingCartItem, cart, ingredients])
 
   const pizzas = getPizzas()
   const desserts = getDesserts()
@@ -42,6 +74,13 @@ export function SetMenuModal({
 
   const handleConfirm = () => {
     if (!selectedPizza || !selectedDessert || !selectedDrink) return
+
+    if (!stockCheck.valid) {
+      toast.error("Insufficient stock", {
+        description: stockCheck.missingIngredients.join(", "),
+      })
+      return
+    }
 
     const setDetails: SetMenuDetails = {
       type,
@@ -72,6 +111,7 @@ export function SetMenuModal({
   }
 
   const isValid = selectedPizza && selectedDessert && selectedDrink
+  const canAdd = isValid && stockCheck.valid
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -176,11 +216,18 @@ export function SetMenuModal({
           )}
         </div>
 
+        {isValid && !stockCheck.valid && (
+          <p className="text-sm text-destructive">
+            Not enough ingredients for this combination (and current cart):{" "}
+            {stockCheck.missingIngredients.join(", ")}
+          </p>
+        )}
+
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleConfirm} disabled={!isValid}>
+          <Button onClick={handleConfirm} disabled={!canAdd}>
             Add to Cart - ${price}
           </Button>
         </DialogFooter>

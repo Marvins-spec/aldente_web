@@ -53,6 +53,13 @@ export default function CashierPage() {
   }
 
   const handleSetMenuAdd = (item: CartItem) => {
+    const validation = validateStockForItems([...cart, item], ingredients)
+    if (!validation.valid) {
+      toast.error("Insufficient stock", {
+        description: validation.missingIngredients.join(", "),
+      })
+      return
+    }
     setCart([...cart, item])
     toast.success(`Added ${item.name} to cart`)
   }
@@ -134,7 +141,7 @@ export default function CashierPage() {
           </p>
         </div>
 
-        <MenuGrid onAddToCart={handleAddToCart} />
+        <MenuGrid onAddToCart={handleAddToCart} cart={cart} />
       </div>
 
       {/* Cart Section */}
@@ -157,6 +164,7 @@ export default function CashierPage() {
         onOpenChange={(open) => setSetMenuModal((prev) => ({ ...prev, open }))}
         type={setMenuModal.type}
         price={setMenuModal.price}
+        cart={cart}
         onAddToCart={handleSetMenuAdd}
       />
     </div>

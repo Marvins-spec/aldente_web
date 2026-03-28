@@ -1,6 +1,6 @@
-import type { Order, OrderItem, Ingredient, Recipe, CartItem, PizzaSize } from "./types"
+import type { Order, OrderItem, Ingredient, Recipe, CartItem, PizzaSize, SetMenuDetails } from "./types"
 import { useStore } from "./store"
-import { getRecipe } from "./data"
+import { getRecipe, getPizzas, getDesserts, getDrinks } from "./data"
 import { isSupabaseConfigured } from "./supabase"
 import {
   supabaseBulkSetIngredients,
@@ -211,6 +211,15 @@ export function calculateIngredientUsage(items: CartItem[]): IngredientUsage[] {
         }
       }
 
+      // Drink from set
+      const drinkRecipe = getRecipe(item.setDetails.drink)
+      if (drinkRecipe) {
+        for (const ing of drinkRecipe.ingredients) {
+          const current = usageMap.get(ing.ingredientId) || 0
+          usageMap.set(ing.ingredientId, current + ing.amount * item.quantity)
+        }
+      }
+
       // Grand Mix Box extras (wings & fries)
       if (item.setDetails.type === "grand-mix-box") {
         const extrasRecipe = getRecipe("set-grand-mix-extras")
@@ -263,6 +272,44 @@ export function validateStockForItems(
     valid: missingIngredients.length === 0,
     missingIngredients,
   }
+}
+
+/** True if at least one pizza + dessert + drink combo can be fulfilled with current stock (and cart). */
+export function canMakeAnySetMenu(
+  setMenuId: "set-pizza-combo" | "set-grand-mix",
+  ingredients: Ingredient[],
+  existingCart: CartItem[] = []
+): boolean {
+  const type: "pizza-combo" | "grand-mix-box" =
+    setMenuId === "set-pizza-combo" ? "pizza-combo" : "grand-mix-box"
+  const pizzas = getPizzas()
+  const desserts = getDesserts()
+  const drinks = getDrinks()
+  for (const pizza of pizzas) {
+    for (const dessert of desserts) {
+      for (const drink of drinks) {
+        const setDetails: SetMenuDetails = {
+          type,
+          pizza: pizza.id,
+          dessert: dessert.id,
+          drink: drink.id,
+        }
+        const probe: CartItem = {
+          cartId: "probe",
+          id: setMenuId,
+          name: "probe",
+          category: "set",
+          quantity: 1,
+          price: 0,
+          setDetails,
+        }
+        if (validateStockForItems([...existingCart, probe], ingredients).valid) {
+          return true
+        }
+      }
+    }
+  }
+  return false
 }
 
 export function calculateMaxProducible(
