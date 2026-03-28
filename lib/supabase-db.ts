@@ -220,8 +220,19 @@ export async function supabaseResetPOS(): Promise<void> {
   const sb = getSupabaseBrowserClient()
   if (!sb) throw new Error("Supabase is not configured")
 
-  const { error } = await sb.rpc("reset_pos")
-  if (error) throw new Error(error.message)
+  // Prefer table ops over RPC: PostgREST often returns 400 for zero-arg RPCs (signature / body),
+  // and this matches what public.reset_pos() does in schema.sql.
+  const { error: deleteError } = await sb
+    .from("orders")
+    .delete()
+    .neq("order_number", -1)
+  if (deleteError) throw new Error(deleteError.message)
+
+  const { error: settingsError } = await sb.from("pos_settings").upsert(
+    { id: 1, order_counter: 1 },
+    { onConflict: "id" }
+  )
+  if (settingsError) throw new Error(settingsError.message)
 }
 
 export function subscribeSupabasePOS(onRefresh: () => void): () => void {
