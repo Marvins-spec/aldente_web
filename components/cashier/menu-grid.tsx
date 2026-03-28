@@ -55,7 +55,7 @@ export function MenuGrid({ onAddToCart }: MenuGridProps) {
   }
 
   const getMaxProducible = (item: MenuItem) => {
-    if (item.category === "set") return Infinity // Set menus: stock checked inside modal
+    if (item.category === "set") return Infinity // Set menus handled separately
     const size = item.category === "pizza" ? (selectedSize[item.id] || "M") : "M"
     return calculateMaxProducible(item.id, ingredients, size)
   }

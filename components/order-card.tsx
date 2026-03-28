@@ -3,7 +3,7 @@
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Clock, ChefHat, User, UserCheck } from "lucide-react"
+import { Clock, ChefHat, User } from "lucide-react"
 import { getMenuItem } from "@/lib/data"
 import { cn } from "@/lib/utils"
 import type { Order, OrderStatus } from "@/lib/types"
@@ -112,16 +112,6 @@ export function OrderCard({
             <div className="flex items-center gap-1">
               <ChefHat className="h-3.5 w-3.5" />
               <span>{order.chefName}</span>
-            </div>
-          )}
-          {order.serverName && (
-            <div className="flex items-center gap-1">
-              <UserCheck className="h-3.5 w-3.5" />
-              <span>
-                {order.status === "served"
-                  ? `Served by ${order.serverName}`
-                  : `Server: ${order.serverName}`}
-              </span>
             </div>
           )}
         </div>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo } from "react"
 import { toast } from "sonner"
 import { useStore } from "@/lib/store"
 import { takeServing, markServed } from "@/lib/api"
@@ -13,29 +13,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { UtensilsCrossed, CheckCircle2, Truck } from "lucide-react"
 import { Empty } from "@/components/ui/empty"
 
-const SERVING_SERVER_NAME_KEY = "aldente-serving-server-name"
-
 export default function ServingPage() {
   const [serverName, setServerName] = useState("")
   const { orders } = useStore()
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(SERVING_SERVER_NAME_KEY)
-      if (saved != null) setServerName(saved)
-    } catch {
-      /* ignore */
-    }
-  }, [])
-
-  const handleServerNameChange = (value: string) => {
-    setServerName(value)
-    try {
-      localStorage.setItem(SERVING_SERVER_NAME_KEY, value)
-    } catch {
-      /* ignore */
-    }
-  }
 
   // Filter orders by status
   const readyOrders = useMemo(
@@ -107,7 +87,7 @@ export default function ServingPage() {
                 id="server-name"
                 placeholder="Enter your name"
                 value={serverName}
-                onChange={(e) => handleServerNameChange(e.target.value)}
+                onChange={(e) => setServerName(e.target.value)}
                 className="w-40 bg-input"
               />
             </div>
