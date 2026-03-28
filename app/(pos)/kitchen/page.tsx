@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { toast } from "sonner"
 import { useStore } from "@/lib/store"
 import { acceptOrder, markReady } from "@/lib/api"
@@ -13,9 +13,29 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChefHat, Clock, CheckCircle2 } from "lucide-react"
 import { Empty } from "@/components/ui/empty"
 
+const KITCHEN_CHEF_NAME_KEY = "aldente-kitchen-chef-name"
+
 export default function KitchenPage() {
   const [chefName, setChefName] = useState("")
   const { orders } = useStore()
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(KITCHEN_CHEF_NAME_KEY)
+      if (saved != null) setChefName(saved)
+    } catch {
+      /* ignore */
+    }
+  }, [])
+
+  const handleChefNameChange = (value: string) => {
+    setChefName(value)
+    try {
+      localStorage.setItem(KITCHEN_CHEF_NAME_KEY, value)
+    } catch {
+      /* ignore */
+    }
+  }
 
   // Filter orders by status
   const waitingOrders = useMemo(
@@ -34,7 +54,7 @@ export default function KitchenPage() {
           (a, b) =>
             new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
         )
-        .slice(0, 10),
+        .slice(0, 30),
     [orders]
   )
 
@@ -87,7 +107,7 @@ export default function KitchenPage() {
                 id="chef-name"
                 placeholder="Enter your name"
                 value={chefName}
-                onChange={(e) => setChefName(e.target.value)}
+                onChange={(e) => handleChefNameChange(e.target.value)}
                 className="w-40 bg-input"
               />
             </div>
