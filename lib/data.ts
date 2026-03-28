@@ -3,10 +3,11 @@ import type { MenuItem, Ingredient, Recipe } from "./types"
 // Menu Items
 export const menuItems: MenuItem[] = [
   // Pizzas
-  { id: "pizza-margherita", name: "Pizza Margherita", category: "pizza", price: 390, available: true },
-  { id: "pizza-prosciutto", name: "Pizza Prosciutto", category: "pizza", price: 390, available: true },
-  { id: "pizza-cheese", name: "Pizza Cheese", category: "pizza", price: 390, available: true },
-  { id: "pizza-veggie-delight", name: "Pizza Veggie Delight", category: "pizza", price: 390, available: true },
+  { id: "pizza-margherita", name: "Pizza Margherita", category: "pizza", price: 390, priceL: 440, available: true },
+  { id: "pizza-prosciutto", name: "Pizza Prosciutto", category: "pizza", price: 390, priceL: 440, available: true },
+  { id: "pizza-cheese", name: "Pizza Cheese", category: "pizza", price: 390, priceL: 440, available: true },
+  { id: "pizza-veggie-delight", name: "Pizza Veggie Delight", category: "pizza", price: 390, priceL: 440, available: true },
+
   { id: "wings-fries-combo", name: "Wings & Fries Combo", category: "main", price: 390, available: true },
 
   { id: "tiramisu", name: "Tiramisu", category: "dessert", price: 350, available: true },
