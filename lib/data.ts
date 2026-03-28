@@ -19,7 +19,7 @@ export const menuItems: MenuItem[] = [
 
   // Set Menus
   { id: "set-pizza-combo", name: "Pizza Combo", category: "set", price: 890, description: "Pizza + Dessert + Drink", available: true },
-  { id: "set-grand-mix", name: "Grand Mix Box", category: "set", price: 1190, description: "Pizza + Dessert + Drink + Wings & Fries", available: true },
+  { id: "set-grand-mix", name: "Grand Mix Box", category: "set", price: 1290, description: "Pizza + Dessert + Drink + Wings & Fries", available: true },
 ]
 
 // Ingredients
