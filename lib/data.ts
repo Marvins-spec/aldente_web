@@ -3,35 +3,22 @@ import type { MenuItem, Ingredient, Recipe } from "./types"
 // Menu Items
 export const menuItems: MenuItem[] = [
   // Pizzas
-  { id: "pizza-margherita", name: "Margherita", category: "pizza", price: 12, priceL: 16, description: "Classic tomato and mozzarella", available: true },
-  { id: "pizza-pepperoni", name: "Pepperoni", category: "pizza", price: 14, priceL: 18, description: "Spicy pepperoni with mozzarella", available: true },
-  { id: "pizza-quattro-formaggi", name: "Quattro Formaggi", category: "pizza", price: 15, priceL: 19, description: "Four cheese blend", available: true },
-  { id: "pizza-diavola", name: "Diavola", category: "pizza", price: 14, priceL: 18, description: "Spicy salami with chili", available: true },
-  { id: "pizza-vegetariana", name: "Vegetariana", category: "pizza", price: 13, priceL: 17, description: "Fresh seasonal vegetables", available: true },
+  { id: "pizza-margherita", name: "Pizza Margherita", category: "pizza", price: 390, available: true },
+  { id: "pizza-prosciutto", name: "Pizza Prosciutto", category: "pizza", price: 390, available: true },
+  { id: "pizza-cheese", name: "Pizza Cheese", category: "pizza", price: 390, available: true },
+  { id: "pizza-veggie-delight", name: "Pizza Veggie Delight", category: "pizza", price: 390, available: true },
+  { id: "wings-fries-combo", name: "Wings & Fries Combo", category: "main", price: 390, available: true },
 
-  // Main Courses
-  { id: "main-lasagna", name: "Lasagna", category: "main", price: 16, description: "Traditional beef lasagna", available: true },
-  { id: "main-carbonara", name: "Spaghetti Carbonara", category: "main", price: 14, description: "Creamy egg and pancetta", available: true },
-  { id: "main-bolognese", name: "Tagliatelle Bolognese", category: "main", price: 14, description: "Slow-cooked meat sauce", available: true },
-  { id: "main-risotto", name: "Risotto ai Funghi", category: "main", price: 15, description: "Mushroom risotto", available: true },
-  { id: "main-chicken-parm", name: "Chicken Parmigiana", category: "main", price: 18, description: "Breaded chicken with tomato and cheese", available: true },
+  { id: "tiramisu", name: "Tiramisu", category: "dessert", price: 350, available: true },
+  { id: "panna-cotta", name: "Panna Cotta", category: "dessert", price: 350, available: true },
 
-  // Desserts
-  { id: "dessert-tiramisu", name: "Tiramisu", category: "dessert", price: 8, description: "Classic coffee dessert", available: true },
-  { id: "dessert-panna-cotta", name: "Panna Cotta", category: "dessert", price: 7, description: "Vanilla cream with berry sauce", available: true },
-  { id: "dessert-gelato", name: "Gelato (3 scoops)", category: "dessert", price: 6, description: "Assorted Italian ice cream", available: true },
-  { id: "dessert-cannoli", name: "Cannoli", category: "dessert", price: 7, description: "Sicilian pastry with ricotta", available: true },
-
-  // Drinks
-  { id: "drink-water", name: "Sparkling Water", category: "drink", price: 3, available: true },
-  { id: "drink-soda", name: "Soda", category: "drink", price: 3, available: true },
-  { id: "drink-lemonade", name: "Fresh Lemonade", category: "drink", price: 4, available: true },
-  { id: "drink-espresso", name: "Espresso", category: "drink", price: 3, available: true },
-  { id: "drink-cappuccino", name: "Cappuccino", category: "drink", price: 4, available: true },
+  { id: "sparkling-water", name: "Sparkling Water", category: "drink", price: 150, available: true },
+  { id: "italian-soda", name: "Italian Soda", category: "drink", price: 260, available: true },
+  { id: "cola", name: "Cola", category: "drink", price: 260, available: true },
 
   // Set Menus
-  { id: "set-pizza-combo", name: "Pizza Combo", category: "set", price: 22, description: "Pizza + Dessert + Drink", available: true },
-  { id: "set-grand-mix", name: "Grand Mix Box", category: "set", price: 28, description: "Pizza + Dessert + Drink + Wings & Fries", available: true },
+  { id: "set-pizza-combo", name: "Pizza Combo", category: "set", price: 890, description: "Pizza + Dessert + Drink", available: true },
+  { id: "set-grand-mix", name: "Grand Mix Box", category: "set", price: 1190, description: "Pizza + Dessert + Drink + Wings & Fries", available: true },
 ]
 
 // Ingredients
@@ -67,94 +54,82 @@ export const initialIngredients: Ingredient[] = [
 export const recipes: Recipe[] = [
   // Pizzas (M size - L uses 1.5x)
   { menuItemId: "pizza-margherita", ingredients: [
-    { ingredientId: "ing-dough", amount: 1 },
-    { ingredientId: "ing-tomato-sauce", amount: 1 },
+    { ingredientId: "ing-flour", amount: 1 },
+    { ingredientId: "ing-ketchup", amount: 1 },
     { ingredientId: "ing-mozzarella", amount: 1 },
-  ]},
-  { menuItemId: "pizza-pepperoni", ingredients: [
-    { ingredientId: "ing-dough", amount: 1 },
-    { ingredientId: "ing-tomato-sauce", amount: 1 },
-    { ingredientId: "ing-mozzarella", amount: 1 },
-    { ingredientId: "ing-pepperoni", amount: 1 },
-  ]},
-  { menuItemId: "pizza-quattro-formaggi", ingredients: [
-    { ingredientId: "ing-dough", amount: 1 },
-    { ingredientId: "ing-tomato-sauce", amount: 0.5 },
-    { ingredientId: "ing-mozzarella", amount: 1 },
-    { ingredientId: "ing-parmesan", amount: 1 },
-    { ingredientId: "ing-gorgonzola", amount: 1 },
-    { ingredientId: "ing-fontina", amount: 1 },
-  ]},
-  { menuItemId: "pizza-diavola", ingredients: [
-    { ingredientId: "ing-dough", amount: 1 },
-    { ingredientId: "ing-tomato-sauce", amount: 1 },
-    { ingredientId: "ing-mozzarella", amount: 1 },
-    { ingredientId: "ing-salami", amount: 1 },
-  ]},
-  { menuItemId: "pizza-vegetariana", ingredients: [
-    { ingredientId: "ing-dough", amount: 1 },
-    { ingredientId: "ing-tomato-sauce", amount: 1 },
-    { ingredientId: "ing-mozzarella", amount: 1 },
-    { ingredientId: "ing-vegetables", amount: 1 },
+    { ingredientId: "ing-basil", amount: 1 },
+    { ingredientId: "ing-olive-oil", amount: 1 },
   ]},
 
-  // Main Courses
-  { menuItemId: "main-lasagna", ingredients: [
-    { ingredientId: "ing-pasta", amount: 1 },
-    { ingredientId: "ing-beef", amount: 1 },
-    { ingredientId: "ing-tomato-sauce", amount: 1 },
+  { menuItemId: "pizza-prosciutto", ingredients: [
+    { ingredientId: "ing-flour", amount: 1 },
+    { ingredientId: "ing-ketchup", amount: 1 },
     { ingredientId: "ing-mozzarella", amount: 1 },
-    { ingredientId: "ing-parmesan", amount: 0.5 },
-  ]},
-  { menuItemId: "main-carbonara", ingredients: [
-    { ingredientId: "ing-pasta", amount: 1 },
-    { ingredientId: "ing-pancetta", amount: 1 },
-    { ingredientId: "ing-eggs", amount: 2 },
     { ingredientId: "ing-parmesan", amount: 1 },
-    { ingredientId: "ing-cream", amount: 0.5 },
-  ]},
-  { menuItemId: "main-bolognese", ingredients: [
-    { ingredientId: "ing-pasta", amount: 1 },
-    { ingredientId: "ing-beef", amount: 1 },
-    { ingredientId: "ing-tomato-sauce", amount: 1 },
-    { ingredientId: "ing-parmesan", amount: 0.5 },
-  ]},
-  { menuItemId: "main-risotto", ingredients: [
-    { ingredientId: "ing-rice", amount: 1 },
-    { ingredientId: "ing-mushrooms", amount: 1 },
-    { ingredientId: "ing-parmesan", amount: 1 },
-    { ingredientId: "ing-cream", amount: 0.5 },
-  ]},
-  { menuItemId: "main-chicken-parm", ingredients: [
-    { ingredientId: "ing-chicken", amount: 1 },
-    { ingredientId: "ing-tomato-sauce", amount: 1 },
-    { ingredientId: "ing-mozzarella", amount: 1 },
-    { ingredientId: "ing-parmesan", amount: 0.5 },
+    { ingredientId: "ing-olive-oil", amount: 1 },
   ]},
 
-  // Desserts
-  { menuItemId: "dessert-tiramisu", ingredients: [
-    { ingredientId: "ing-mascarpone", amount: 1 },
-    { ingredientId: "ing-ladyfingers", amount: 1 },
-    { ingredientId: "ing-coffee", amount: 1 },
-    { ingredientId: "ing-eggs", amount: 1 },
+  { menuItemId: "pizza-cheese", ingredients: [
+    { ingredientId: "ing-flour", amount: 1 },
+    { ingredientId: "ing-ketchup", amount: 1 },
+    { ingredientId: "ing-mozzarella", amount: 1 },
+    { ingredientId: "ing-cheddar-cheese", amount: 1 },
+    { ingredientId: "ing-olive-oil", amount: 1 },
   ]},
-  { menuItemId: "dessert-panna-cotta", ingredients: [
-    { ingredientId: "ing-cream", amount: 1 },
-    { ingredientId: "ing-berries", amount: 1 },
+
+  { menuItemId: "pizza-veggie-delight", ingredients: [
+    { ingredientId: "ing-flour", amount: 1 },
+    { ingredientId: "ing-ketchup", amount: 1 },
+    { ingredientId: "ing-mozzarella", amount: 1 },
+    { ingredientId: "ing-bell-pepper", amount: 1 },
+    { ingredientId: "ing-olive-oil", amount: 1 },
   ]},
-  { menuItemId: "dessert-gelato", ingredients: [
-    { ingredientId: "ing-gelato", amount: 3 },
+
+  { menuItemId: "wings-fries-combo", ingredients: [
+    { ingredientId: "ing-raw-chicken", amount: 1 },
+    { ingredientId: "ing-potato", amount: 1 },
+    { ingredientId: "ing-salt", amount: 1 },
+    { ingredientId: "ing-bbq-sauce", amount: 1 },
   ]},
-  { menuItemId: "dessert-cannoli", ingredients: [
-    { ingredientId: "ing-cannoli-shells", amount: 2 },
-    { ingredientId: "ing-ricotta", amount: 1 },
+
+  { menuItemId: "tiramisu", ingredients: [
+    { ingredientId: "ing-milk", amount: 1 },
+    { ingredientId: "ing-egg", amount: 1 },
+    { ingredientId: "ing-sugar", amount: 1 },
+    { ingredientId: "ing-coffee-powder", amount: 1 },
+    { ingredientId: "ing-cocoa-powder", amount: 1 },
+  ]},
+
+  { menuItemId: "panna-cotta", ingredients: [
+    { ingredientId: "ing-heavy-cream", amount: 1 },
+    { ingredientId: "ing-sugar", amount: 1 },
+    { ingredientId: "ing-vanilla", amount: 1 },
+    { ingredientId: "ing-blueberry", amount: 1 },
+  ]},
+
+  { menuItemId: "sparkling-water", ingredients: [
+    { ingredientId: "ing-carbonated-water", amount: 1 },
+    { ingredientId: "ing-mint", amount: 1 },
+  ]},
+
+  { menuItemId: "italian-soda", ingredients: [
+    { ingredientId: "ing-carbonated-water", amount: 1 },
+    { ingredientId: "ing-lemon", amount: 1 },
+    { ingredientId: "ing-sugar", amount: 1 },
+  ]},
+
+  { menuItemId: "cola", ingredients: [
+    { ingredientId: "ing-carbonated-water", amount: 1 },
+    { ingredientId: "ing-lemon", amount: 1 },
+    { ingredientId: "ing-cilantro", amount: 1 },
   ]},
 
   // Set menus include wings & fries for grand mix
   { menuItemId: "set-grand-mix-extras", ingredients: [
-    { ingredientId: "ing-wings", amount: 1 },
-    { ingredientId: "ing-fries", amount: 1 },
+    { ingredientId: "ing-raw-chicken", amount: 1 },
+    { ingredientId: "ing-potato", amount: 1 },
+    { ingredientId: "ing-salt", amount: 1 },
+    { ingredientId: "ing-bbq-sauce", amount: 1 },
   ]},
 ]
 
