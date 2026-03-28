@@ -158,7 +158,7 @@ export default function StockPage() {
           <div>
             <h1 className="text-2xl font-bold text-foreground">Stock Management</h1>
             <p className="text-muted-foreground">
-              View levels and restock below — changes sync to your backend (and Google Sheet if configured)
+              กูว่าแล้วมึงต้องอ่าน
             </p>
           </div>
 
