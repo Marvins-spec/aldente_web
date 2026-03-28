@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { toast } from "sonner"
 import { useStore } from "@/lib/store"
-import { resetOrderCounter, updateIngredientStock } from "@/lib/api"
+import { addIngredient, removeIngredient, resetOrderCounter, updateIngredientStock } from "@/lib/api"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -38,13 +38,24 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Settings, RotateCcw, Package, UtensilsCrossed, Edit2 } from "lucide-react"
+import { Settings, RotateCcw, Package, UtensilsCrossed, Edit2, Plus, Trash2 } from "lucide-react"
 import { getRecipe } from "@/lib/data"
+
+const emptyNewIngredient = {
+  id: "",
+  name: "",
+  stock: "0",
+  unit: "",
+  lowStockThreshold: "10",
+}
 
 export default function AdminPage() {
   const { orderCounter, menuItems, recipes, ingredients, orders } = useStore()
   const [editingStock, setEditingStock] = useState<{id: string, name: string, stock: number} | null>(null)
   const [newStockValue, setNewStockValue] = useState("")
+  const [addIngredientOpen, setAddIngredientOpen] = useState(false)
+  const [newIngredientForm, setNewIngredientForm] = useState(emptyNewIngredient)
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
 
   const handleResetOrders = async () => {
     try {
@@ -73,6 +84,54 @@ export default function AdminPage() {
       setNewStockValue("")
     } catch (error) {
       toast.error("Failed to update stock")
+    }
+  }
+
+  const handleAddIngredientSubmit = async () => {
+    const id = newIngredientForm.id.trim()
+    const name = newIngredientForm.name.trim()
+    const unit = newIngredientForm.unit.trim()
+    const stock = parseFloat(newIngredientForm.stock)
+    const lowStockThreshold = parseFloat(newIngredientForm.lowStockThreshold)
+
+    if (!id || !/^[\w-]+$/.test(id)) {
+      toast.error("ID must contain only letters, numbers, hyphens, underscores (e.g. ing-mushrooms)")
+      return
+    }
+    if (!name || !unit) {
+      toast.error("Name and unit are required")
+      return
+    }
+    if (isNaN(stock) || stock < 0 || isNaN(lowStockThreshold) || lowStockThreshold < 0) {
+      toast.error("Stock and threshold must be valid numbers (0 or greater)")
+      return
+    }
+
+    try {
+      await addIngredient({
+        id,
+        name,
+        stock,
+        unit,
+        lowStockThreshold,
+      })
+      toast.success(`Added ingredient: ${name}`)
+      setNewIngredientForm(emptyNewIngredient)
+      setAddIngredientOpen(false)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not add ingredient")
+    }
+  }
+
+  const handleDeleteIngredient = async () => {
+    if (!deleteTarget) return
+    const { id, name } = deleteTarget
+    try {
+      await removeIngredient(id)
+      toast.success(`Removed ${name}`)
+      setDeleteTarget(null)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not remove ingredient")
     }
   }
 
@@ -324,84 +383,225 @@ export default function AdminPage() {
 
           <TabsContent value="stock" className="mt-0">
             <Card className="bg-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Package className="h-5 w-5" />
-                  Edit Stock Levels
-                </CardTitle>
-                <CardDescription>
-                  Manually adjust ingredient stock levels
-                </CardDescription>
+              <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4 space-y-0">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Package className="h-5 w-5" />
+                    Ingredients &amp; stock
+                  </CardTitle>
+                  <CardDescription>
+                    Add or remove ingredients, or edit quantities. Removing an ingredient does not change menu recipes in
+                    code — update recipes in <code className="text-primary">data.tsx</code> if needed.
+                  </CardDescription>
+                </div>
+                <Dialog open={addIngredientOpen} onOpenChange={setAddIngredientOpen}>
+                  <Button
+                    type="button"
+                    className="gap-2"
+                    onClick={() => {
+                      setNewIngredientForm({ ...emptyNewIngredient })
+                      setAddIngredientOpen(true)
+                    }}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add ingredient
+                  </Button>
+                  <DialogContent className="bg-card sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>New ingredient</DialogTitle>
+                      <DialogDescription>
+                        Use a unique ID (e.g. <code className="text-xs">ing-mushrooms</code>). This ID is used in
+                        recipes.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-3 py-2">
+                      <div className="grid gap-1.5">
+                        <Label htmlFor="ing-id">ID</Label>
+                        <Input
+                          id="ing-id"
+                          placeholder="ing-mushrooms"
+                          value={newIngredientForm.id}
+                          onChange={(e) =>
+                            setNewIngredientForm((f) => ({ ...f, id: e.target.value }))
+                          }
+                          className="bg-input"
+                        />
+                      </div>
+                      <div className="grid gap-1.5">
+                        <Label htmlFor="ing-name">Name</Label>
+                        <Input
+                          id="ing-name"
+                          placeholder="Mushrooms"
+                          value={newIngredientForm.name}
+                          onChange={(e) =>
+                            setNewIngredientForm((f) => ({ ...f, name: e.target.value }))
+                          }
+                          className="bg-input"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="grid gap-1.5">
+                          <Label htmlFor="ing-stock">Stock</Label>
+                          <Input
+                            id="ing-stock"
+                            type="number"
+                            min={0}
+                            value={newIngredientForm.stock}
+                            onChange={(e) =>
+                              setNewIngredientForm((f) => ({ ...f, stock: e.target.value }))
+                            }
+                            className="bg-input"
+                          />
+                        </div>
+                        <div className="grid gap-1.5">
+                          <Label htmlFor="ing-unit">Unit</Label>
+                          <Input
+                            id="ing-unit"
+                            placeholder="portions"
+                            value={newIngredientForm.unit}
+                            onChange={(e) =>
+                              setNewIngredientForm((f) => ({ ...f, unit: e.target.value }))
+                            }
+                            className="bg-input"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid gap-1.5">
+                        <Label htmlFor="ing-threshold">Low stock threshold</Label>
+                        <Input
+                          id="ing-threshold"
+                          type="number"
+                          min={0}
+                          value={newIngredientForm.lowStockThreshold}
+                          onChange={(e) =>
+                            setNewIngredientForm((f) => ({ ...f, lowStockThreshold: e.target.value }))
+                          }
+                          className="bg-input"
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setAddIngredientOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={() => void handleAddIngredientSubmit()}>Create</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Ingredient</TableHead>
-                      <TableHead className="text-right">Current Stock</TableHead>
+                      <TableHead className="w-[140px] text-muted-foreground">ID</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead className="text-right">Stock</TableHead>
                       <TableHead className="text-right">Unit</TableHead>
+                      <TableHead className="text-right">Low threshold</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {ingredients.map((ingredient) => (
                       <TableRow key={ingredient.id}>
+                        <TableCell className="font-mono text-xs text-muted-foreground">{ingredient.id}</TableCell>
                         <TableCell className="font-medium">{ingredient.name}</TableCell>
                         <TableCell className="text-right">{ingredient.stock}</TableCell>
                         <TableCell className="text-right text-muted-foreground">
                           {ingredient.unit}
                         </TableCell>
+                        <TableCell className="text-right text-muted-foreground">
+                          {ingredient.lowStockThreshold}
+                        </TableCell>
                         <TableCell className="text-right">
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setEditingStock({
-                                    id: ingredient.id,
-                                    name: ingredient.name,
-                                    stock: ingredient.stock,
-                                  })
-                                  setNewStockValue(ingredient.stock.toString())
-                                }}
-                              >
-                                <Edit2 className="h-4 w-4" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="bg-card">
-                              <DialogHeader>
-                                <DialogTitle>Edit Stock</DialogTitle>
-                                <DialogDescription>
-                                  Update stock level for {editingStock?.name}
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="py-4">
-                                <Label htmlFor="stock-value">New Stock Value</Label>
-                                <Input
-                                  id="stock-value"
-                                  type="number"
-                                  min="0"
-                                  value={newStockValue}
-                                  onChange={(e) => setNewStockValue(e.target.value)}
-                                  className="mt-2 bg-input"
-                                />
-                              </div>
-                              <DialogFooter>
-                                <Button variant="outline" onClick={() => setEditingStock(null)}>
-                                  Cancel
+                          <div className="flex justify-end gap-1">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    setEditingStock({
+                                      id: ingredient.id,
+                                      name: ingredient.name,
+                                      stock: ingredient.stock,
+                                    })
+                                    setNewStockValue(ingredient.stock.toString())
+                                  }}
+                                >
+                                  <Edit2 className="h-4 w-4" />
                                 </Button>
-                                <Button onClick={handleUpdateStock}>
-                                  Update Stock
-                                </Button>
-                              </DialogFooter>
-                            </DialogContent>
-                          </Dialog>
+                              </DialogTrigger>
+                              <DialogContent className="bg-card">
+                                <DialogHeader>
+                                  <DialogTitle>Edit Stock</DialogTitle>
+                                  <DialogDescription>
+                                    Update stock level for {editingStock?.name}
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="py-4">
+                                  <Label htmlFor="stock-value">New Stock Value</Label>
+                                  <Input
+                                    id="stock-value"
+                                    type="number"
+                                    min="0"
+                                    value={newStockValue}
+                                    onChange={(e) => setNewStockValue(e.target.value)}
+                                    className="mt-2 bg-input"
+                                  />
+                                </div>
+                                <DialogFooter>
+                                  <Button variant="outline" onClick={() => setEditingStock(null)}>
+                                    Cancel
+                                  </Button>
+                                  <Button onClick={handleUpdateStock}>
+                                    Update Stock
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:text-destructive"
+                              onClick={() =>
+                                setDeleteTarget({ id: ingredient.id, name: ingredient.name })
+                              }
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
+
+                <AlertDialog
+                  open={!!deleteTarget}
+                  onOpenChange={(open) => !open && setDeleteTarget(null)}
+                >
+                  <AlertDialogContent className="bg-card">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Remove ingredient?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will delete{" "}
+                        <strong>{deleteTarget?.name}</strong> ({deleteTarget?.id}) from inventory. Recipes in{" "}
+                        <code className="text-xs">data.tsx</code> may still reference this ID until you update them.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        onClick={() => void handleDeleteIngredient()}
+                      >
+                        Remove
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </CardContent>
             </Card>
           </TabsContent>

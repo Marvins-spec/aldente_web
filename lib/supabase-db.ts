@@ -178,6 +178,28 @@ export async function supabaseUpdateIngredientStock(ingredientId: string, newSto
   if (error) throw new Error(error.message)
 }
 
+export async function supabaseInsertIngredient(ing: Ingredient): Promise<void> {
+  const sb = getSupabaseBrowserClient()
+  if (!sb) throw new Error("Supabase is not configured")
+
+  const { error } = await sb.from("ingredients").insert({
+    id: ing.id,
+    name: ing.name,
+    stock: ing.stock,
+    unit: ing.unit,
+    low_stock_threshold: ing.lowStockThreshold,
+  })
+  if (error) throw new Error(error.message)
+}
+
+export async function supabaseDeleteIngredient(id: string): Promise<void> {
+  const sb = getSupabaseBrowserClient()
+  if (!sb) throw new Error("Supabase is not configured")
+
+  const { error } = await sb.from("ingredients").delete().eq("id", id)
+  if (error) throw new Error(error.message)
+}
+
 export async function supabaseBulkSetIngredients(ingredients: Ingredient[]): Promise<void> {
   const sb = getSupabaseBrowserClient()
   if (!sb) throw new Error("Supabase is not configured")

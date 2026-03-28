@@ -31,7 +31,9 @@ interface POSStore {
   deductStockFromOrder: (usage: IngredientUsage[]) => void
   syncStockFromSheet: (ingredients: Ingredient[]) => void
   updateIngredientStock: (ingredientId: string, newStock: number) => void
-  
+  addIngredient: (ingredient: Ingredient) => void
+  removeIngredient: (ingredientId: string) => void
+
   // Admin Actions
   resetOrderCounter: () => void
   updateMenuItem: (menuItem: MenuItem) => void
@@ -110,6 +112,16 @@ export const useStore = create<POSStore>()(
             : ingredient
         ),
       })),
+
+      addIngredient: (ingredient) =>
+        set((state) => ({
+          ingredients: [...state.ingredients, ingredient],
+        })),
+
+      removeIngredient: (ingredientId) =>
+        set((state) => ({
+          ingredients: state.ingredients.filter((i) => i.id !== ingredientId),
+        })),
 
       // Admin Actions
       resetOrderCounter: () => set(() => ({

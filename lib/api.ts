@@ -1,10 +1,12 @@
-import type { Order, OrderItem, Ingredient, Recipe, CartItem, PizzaSize } from "./types"
+﻿import type { Order, OrderItem, Ingredient, Recipe, CartItem, PizzaSize } from "./types"
 import { useStore } from "./store"
 import { getRecipe } from "./data"
 import { isSupabaseConfigured } from "./supabase"
 import {
   supabaseBulkSetIngredients,
   supabaseCreateOrder,
+  supabaseDeleteIngredient,
+  supabaseInsertIngredient,
   supabasePatchOrder,
   supabaseResetPOS,
   supabaseUpdateIngredientStock,
@@ -304,4 +306,33 @@ export async function updateIngredientStock(
     return
   }
   useStore.getState().updateIngredientStock(ingredientId, newStock)
+}
+
+export async function addIngredient(ingredient: Ingredient): Promise<void> {
+  const state = useStore.getState()
+  if (state.ingredients.some((i) => i.id === ingredient.id)) {
+    throw new Error("An ingredient with this ID already exists")
+  }
+  if (isSupabaseConfigured()) {
+    await supabaseInsertIngredient(ingredient)
+    await pushIngredientsToSheetIfConfigured([...state.ingredients, ingredient])
+    return
+  }
+  state.addIngredient(ingredient)
+  await pushIngredientsToSheetIfConfigured(useStore.getState().ingredients)
+}
+
+export async function removeIngredient(ingredientId: string): Promise<void> {
+  const state = useStore.getState()
+  const next = state.ingredients.filter((i) => i.id !== ingredientId)
+  if (next.length === state.ingredients.length) {
+    throw new Error("Ingredient not found")
+  }
+  if (isSupabaseConfigured()) {
+    await supabaseDeleteIngredient(ingredientId)
+    await pushIngredientsToSheetIfConfigured(next)
+    return
+  }
+  state.removeIngredient(ingredientId)
+  await pushIngredientsToSheetIfConfigured(useStore.getState().ingredients)
 }
