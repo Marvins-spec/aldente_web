@@ -4,7 +4,7 @@ import type { MenuItem, Ingredient, Recipe } from "./types"
 export const menuItems: MenuItem[] = [
   // Pizzas
   { id: "pizza-margherita", name: "Pizza Margherita", category: "pizza", price: 390, priceL: 440, available: true },
-  { id: "pizza-prosciutto", name: "Pizza Prosciutto", category: "pizza", price: 390, priceL: 440, available: true },
+  { id: "pizza-prosciutto", name: "Pizza Parma Ham", category: "pizza", price: 390, priceL: 440, available: true },
   { id: "pizza-cheese", name: "Pizza Cheese", category: "pizza", price: 390, priceL: 440, available: true },
   { id: "pizza-veggie-delight", name: "Pizza Veggie Delight", category: "pizza", price: 390, priceL: 440, available: true },
 
