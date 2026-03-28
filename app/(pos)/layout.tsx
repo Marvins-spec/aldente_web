@@ -12,7 +12,7 @@ export default function POSLayout({
       <div className="flex h-screen overflow-hidden">
         <POSSidebar />
         <main className="flex-1 overflow-auto">{children}</main>
-        <Toaster />
+        <Toaster position="top-right" />
       </div>
     </SupabaseProvider>
   )
