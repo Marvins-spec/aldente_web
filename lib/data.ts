@@ -62,6 +62,7 @@ export const initialIngredients: Ingredient[] = [
   { id: "ing-cilantro", name: "Cilantro", stock: 20, unit: "leaves", lowStockThreshold: 10 },
 ]
 
+
 // Recipes - ingredient mappings for each menu item
 export const recipes: Recipe[] = [
   // Pizzas (M size - L uses 1.5x)

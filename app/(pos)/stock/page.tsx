@@ -3,7 +3,12 @@
 import { useState, useMemo } from "react"
 import { toast } from "sonner"
 import { useStore } from "@/lib/store"
-import { syncStockFromSheet, calculateMaxProducible } from "@/lib/api"
+import {
+  syncStockFromSheet,
+  calculateMaxProducible,
+  updateIngredientStock,
+  pushIngredientsToSheetIfConfigured,
+} from "@/lib/api"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -17,12 +22,75 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Package, RefreshCw, AlertTriangle, Pizza, UtensilsCrossed, IceCream } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import {
+  Package,
+  RefreshCw,
+  AlertTriangle,
+  Pizza,
+  UtensilsCrossed,
+  IceCream,
+  Loader2,
+  Plus,
+} from "lucide-react"
+import type { Ingredient } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 export default function StockPage() {
   const [isSyncing, setIsSyncing] = useState(false)
+  const [drafts, setDrafts] = useState<Record<string, string>>({})
+  const [saving, setSaving] = useState<Record<string, boolean>>({})
   const { ingredients, menuItems } = useStore()
+
+  const mergedWith = (id: string, stock: number): Ingredient[] =>
+    ingredients.map((i) => (i.id === id ? { ...i, stock } : i))
+
+  const handleSetStock = async (ing: Ingredient) => {
+    const raw = drafts[ing.id]?.trim() ?? String(ing.stock)
+    const n = parseFloat(raw)
+    if (isNaN(n) || n < 0) {
+      toast.error("Enter a valid number (0 or greater)")
+      return
+    }
+    setSaving((s) => ({ ...s, [ing.id]: true }))
+    try {
+      await updateIngredientStock(ing.id, n)
+      await pushIngredientsToSheetIfConfigured(mergedWith(ing.id, n))
+      toast.success(`Saved ${ing.name}: ${n} ${ing.unit}`)
+      setDrafts((d) => {
+        const next = { ...d }
+        delete next[ing.id]
+        return next
+      })
+    } catch {
+      toast.error("Could not save stock")
+    } finally {
+      setSaving((s) => ({ ...s, [ing.id]: false }))
+    }
+  }
+
+  const handleAddStock = async (ing: Ingredient, delta: number) => {
+    const n = Math.max(0, ing.stock + delta)
+    setSaving((s) => ({ ...s, [ing.id]: true }))
+    try {
+      await updateIngredientStock(ing.id, n)
+      await pushIngredientsToSheetIfConfigured(mergedWith(ing.id, n))
+      toast.success(
+        delta >= 0
+          ? `${ing.name}: +${delta} → ${n} ${ing.unit}`
+          : `${ing.name} → ${n} ${ing.unit}`
+      )
+      setDrafts((d) => {
+        const next = { ...d }
+        delete next[ing.id]
+        return next
+      })
+    } catch {
+      toast.error("Could not save stock")
+    } finally {
+      setSaving((s) => ({ ...s, [ing.id]: false }))
+    }
+  }
 
   // Low stock items
   const lowStockItems = useMemo(
@@ -90,7 +158,7 @@ export default function StockPage() {
           <div>
             <h1 className="text-2xl font-bold text-foreground">Stock Management</h1>
             <p className="text-muted-foreground">
-              Monitor ingredient levels and production capacity
+              View levels and restock below — changes sync to your backend (and Google Sheet if configured)
             </p>
           </div>
 
@@ -169,12 +237,13 @@ export default function StockPage() {
                     All Ingredients
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>Ingredient</TableHead>
                         <TableHead className="text-right">Current Stock</TableHead>
+                        <TableHead className="min-w-[280px]">Restock</TableHead>
                         <TableHead className="text-right">Threshold</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="w-[200px]">Level</TableHead>
@@ -184,7 +253,10 @@ export default function StockPage() {
                       {ingredients.map((ingredient) => {
                         const status = getStockStatus(ingredient.stock, ingredient.lowStockThreshold)
                         const percentage = Math.min((ingredient.stock / (ingredient.lowStockThreshold * 5)) * 100, 100)
-                        
+                        const isSaving = saving[ingredient.id]
+                        const draftVal =
+                          drafts[ingredient.id] ?? String(ingredient.stock)
+
                         return (
                           <TableRow key={ingredient.id}>
                             <TableCell className="font-medium">
@@ -192,6 +264,57 @@ export default function StockPage() {
                             </TableCell>
                             <TableCell className="text-right">
                               {ingredient.stock} {ingredient.unit}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <div className="flex gap-0.5">
+                                  {[1, 5, 10].map((step) => (
+                                    <Button
+                                      key={step}
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-8 px-2 text-xs"
+                                      disabled={isSaving}
+                                      aria-label={`Add ${step} ${ingredient.unit}`}
+                                      onClick={() => void handleAddStock(ingredient, step)}
+                                    >
+                                      <Plus className="mr-0.5 h-3 w-3" />
+                                      {step}
+                                    </Button>
+                                  ))}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    step={1}
+                                    inputMode="decimal"
+                                    className="h-8 w-24 text-right tabular-nums"
+                                    value={draftVal}
+                                    disabled={isSaving}
+                                    onChange={(e) =>
+                                      setDrafts((d) => ({
+                                        ...d,
+                                        [ingredient.id]: e.target.value,
+                                      }))
+                                    }
+                                  />
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    className="h-8"
+                                    disabled={isSaving}
+                                    onClick={() => void handleSetStock(ingredient)}
+                                  >
+                                    {isSaving ? (
+                                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    ) : (
+                                      "Save"
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
                             </TableCell>
                             <TableCell className="text-right text-muted-foreground">
                               {ingredient.lowStockThreshold} {ingredient.unit}

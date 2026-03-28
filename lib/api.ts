@@ -160,6 +160,14 @@ export async function updateStockToSheet(ingredients: Ingredient[]): Promise<boo
   }
 }
 
+/** After local/Supabase stock change, push full list to Sheet when URL is set */
+export async function pushIngredientsToSheetIfConfigured(
+  ingredients: Ingredient[]
+): Promise<void> {
+  if (!GOOGLE_SHEET_URL) return
+  await updateStockToSheet(ingredients)
+}
+
 export async function syncStockFromSheet(): Promise<void> {
   const ingredients = await getStockFromSheet()
   useStore.getState().syncStockFromSheet(ingredients)
