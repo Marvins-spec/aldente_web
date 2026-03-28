@@ -1,4 +1,4 @@
-﻿import type { Order, OrderItem, Ingredient, Recipe, CartItem, PizzaSize } from "./types"
+import type { Order, OrderItem, Ingredient, Recipe, CartItem, PizzaSize } from "./types"
 import { useStore } from "./store"
 import { getRecipe } from "./data"
 import { isSupabaseConfigured } from "./supabase"
