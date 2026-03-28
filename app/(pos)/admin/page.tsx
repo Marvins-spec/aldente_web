@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { useStore } from "@/lib/store"
 import { addIngredient, removeIngredient, resetOrderCounter, updateIngredientStock } from "@/lib/api"
@@ -38,7 +39,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Settings, RotateCcw, Package, UtensilsCrossed, Edit2, Plus, Trash2 } from "lucide-react"
+import { Settings, RotateCcw, Package, UtensilsCrossed, Edit2, Plus, Trash2, LogOut } from "lucide-react"
 import { getRecipe } from "@/lib/data"
 
 const emptyNewIngredient = {
@@ -50,6 +51,7 @@ const emptyNewIngredient = {
 }
 
 export default function AdminPage() {
+  const router = useRouter()
   const { orderCounter, menuItems, recipes, ingredients, orders } = useStore()
   const [editingStock, setEditingStock] = useState<{id: string, name: string, stock: number} | null>(null)
   const [newStockValue, setNewStockValue] = useState("")
@@ -139,6 +141,16 @@ export default function AdminPage() {
     return ingredients.find(i => i.id === id)?.name || id
   }
 
+  const handleAdminLogout = async () => {
+    try {
+      await fetch("/api/admin/logout", { method: "POST" })
+      router.push("/admin/login")
+      router.refresh()
+    } catch {
+      toast.error("Could not sign out")
+    }
+  }
+
   const activeOrders = orders.filter(o => o.status !== "served").length
   const totalRevenue = orders.reduce((sum, o) => sum + o.totalPrice, 0)
 
@@ -153,10 +165,16 @@ export default function AdminPage() {
               System configuration and management
             </p>
           </div>
-          <Badge variant="secondary" className="px-4 py-2">
-            <Settings className="mr-2 h-4 w-4" />
-            Admin Mode
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="px-4 py-2">
+              <Settings className="mr-2 h-4 w-4" />
+              Admin Mode
+            </Badge>
+            <Button type="button" variant="outline" size="sm" onClick={handleAdminLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign out
+            </Button>
+          </div>
         </div>
       </header>
 
