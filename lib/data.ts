@@ -63,7 +63,7 @@ export const recipes: Recipe[] = [
     { ingredientId: "ing-flour", amount: 1 },
     { ingredientId: "ing-ketchup", amount: 1 },
     { ingredientId: "ing-mozzarella", amount: 1 },
-    { ingredientId: "ing-parmesan", amount: 1 },
+    { ingredientId: "ing-basil", amount: 1 },
     { ingredientId: "ing-olive-oil", amount: 1 },
   ]},
   
@@ -71,7 +71,7 @@ export const recipes: Recipe[] = [
     { ingredientId: "ing-flour", amount: 1 },
     { ingredientId: "ing-ketchup", amount: 1 },
     { ingredientId: "ing-mozzarella", amount: 1 },
-    { ingredientId: "ing-cheddar-cheese", amount: 1 },
+    { ingredientId: "ing-basil", amount: 1 },
     { ingredientId: "ing-olive-oil", amount: 1 },
   ]},
   
@@ -79,7 +79,7 @@ export const recipes: Recipe[] = [
     { ingredientId: "ing-flour", amount: 1 },
     { ingredientId: "ing-ketchup", amount: 1 },
     { ingredientId: "ing-mozzarella", amount: 1 },
-    { ingredientId: "ing-bell-pepper", amount: 1 },
+    { ingredientId: "ing-basil", amount: 1 },
     { ingredientId: "ing-olive-oil", amount: 1 },
   ]},
   
