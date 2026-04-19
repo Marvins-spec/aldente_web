@@ -9,6 +9,7 @@ import {
   UtensilsCrossed,
   Package,
   Settings,
+  Calculator,
 } from "lucide-react"
 
 const navigation = [
@@ -16,6 +17,7 @@ const navigation = [
   { name: "Kitchen", href: "/kitchen", icon: ChefHat },
   { name: "Serving", href: "/serving", icon: UtensilsCrossed },
   { name: "Stock", href: "/stock", icon: Package },
+  { name: "Cost Calculator", href: "/cost-calculator", icon: Calculator },
   { name: "Admin", href: "/admin", icon: Settings },
 ]
 
